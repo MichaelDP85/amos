@@ -4,23 +4,24 @@ import matplotlib.pyplot as plt
 import numpy
 import argparse
 import iris.coord_categorisation
+from provenance import get_history_record
 
 iris.FUTURE.netcdf_promote = True
 
 mask_file = 'sftlf_fx_ACCESS1-3_historical_r0i0p0.nc'
 mask_location = data_directory + mask_file
 
-def mask_to_array(input_file):
+def mask_to_array(input_file,threshold):
 
     sltlf_cube = iris.load_cube(mask_location, 'land_area_fraction')
     numpy.zeros((sltlf_cube.shape[0],sltlf_cube.shape[1]))
-    ocean_mask = numpy.where(sltlf_cube.data<50,True,False)
+    ocean_mask = numpy.where(sltlf_cube.data<threshold,True,False)
     land_mask = ~ocean_mask
     
     return land_mask,ocean_mask
 
 
-def plot_month(subset_month,apply_mask):
+def plot_month(subset_month,apply_mask,threshold):
     
     #read data
     cube = iris.load_cube(data_location, 'precipitation_flux')
@@ -30,13 +31,16 @@ def plot_month(subset_month,apply_mask):
     cube.units = 'mm/day'
     
     #assign mask to variables
-    lm, om = mask_to_array(mask_location)
+    lm, om = mask_to_array(mask_location,threshold)
+    
+    assert lm.shape == cube.shape, "Mask dimensions for land dont match"
+    assert om.shape == cube.shape, "Mask dimensions for ocean dont match"
     
     #apply mask
     if apply_mask == 'Land':
         cube.mask = lm
     if apply_mask == 'Ocean':
-        cube = om
+        cube.mask = om
     else:
         pass
     
@@ -75,7 +79,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=description)
     
     parser.add_argument("subset_month", type=str, help="Month to plot")
+    
+    text_file = open(output_location + "history_log.txt", "w")
+    output = get_history_record()
+    text_file.write(output
 
-    args = parser.parse_args()            
+    args = parser.parse_args() 
+    
+    
     main(args)
     

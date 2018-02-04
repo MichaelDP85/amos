@@ -1,0 +1,1 @@
+Sun Feb 04 16:24:07 2018: /Users/Michael/anaconda/envs/pyaos-lesson/bin/python /Users/Michael/anaconda/envs/pyaos-lesson/lib/python3.6/site-packages/ipykernel_launcher.py -f /Users/Michael/Library/Jupyter/runtime/kernel-6bc36e3b-4f34-467a-bfd4-c3282c04ae5f.json (Git hash: 268a349)
