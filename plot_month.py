@@ -7,7 +7,20 @@ import iris.coord_categorisation
 
 iris.FUTURE.netcdf_promote = True
 
-def plot_month(subset_month):
+mask_file = 'sftlf_fx_ACCESS1-3_historical_r0i0p0.nc'
+mask_location = data_directory + mask_file
+
+def mask_to_array(input_file):
+
+    sltlf_cube = iris.load_cube(mask_location, 'land_area_fraction')
+    numpy.zeros((sltlf_cube.shape[0],sltlf_cube.shape[1]))
+    ocean_mask = numpy.where(sltlf_cube.data<50,True,False)
+    land_mask = ~ocean_mask
+    
+    return land_mask,ocean_mask
+
+
+def plot_month(subset_month,apply_mask):
     
     #read data
     cube = iris.load_cube(data_location, 'precipitation_flux')
@@ -15,6 +28,17 @@ def plot_month(subset_month):
     #adjust units
     cube.data = cube.data * 86400
     cube.units = 'mm/day'
+    
+    #assign mask to variables
+    lm, om = mask_to_array(mask_location)
+    
+    #apply mask
+    if apply_mask == 'Land':
+        cube.mask = lm
+    if apply_mask == 'Ocean':
+        cube = om
+    else:
+        pass
     
     #subset month
     iris.coord_categorisation.add_month(cube,'time')
@@ -41,6 +65,9 @@ if __name__ == "__main__":
     data_directory = '/Users/michael/desktop/data-carpentry/data/'
     file_name = 'pr_Amon_ACCESS1-3_historical_r1i1p1_200101-200512.nc'
     output_location = '/Users/michael/desktop/data-carpentry/output/'
+    
+    mask_file = 'sftlf_fx_ACCESS1-3_historical_r0i0p0.nc'
+    mask_location = data_directory + mask_file
     
     data_location = data_directory + file_name
     
